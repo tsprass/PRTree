@@ -56,3 +56,5 @@ Collate:
     'prtree_validation.R'
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 7.3.3
+URL: https://github.com/tsprass/PRTree
+BugReports: https://github.com/tsprass/PRTree/issues
