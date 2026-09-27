@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^.*\.vscode$
+^\.positai$
+^\.claude$
+^man-roxygen$
+^\.github$
