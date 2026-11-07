@@ -73,7 +73,15 @@ This version is a complete architectural overhaul of the package, introducing si
 
 # Version History
 
-## PRTree 1.1.0 (Release Date: YYYY-MM-DD)
+## PRTree 1.1.1 (Release Date: YYYY-MM-DD)
+
+### Bug fixes
+
+- Fixed a bug in the handling of `sigma_grid`: a scalar or a vector supplied through `pr_tree_control()` (e.g., `sigma_grid = 0`) was converted to a `1 x 1` matrix before the number of predictors was known. The Fortran routine then read beyond the supplied values, and `model$sigma` contained uninitialized memory. The grid is now expanded to `n_feat` columns once `X` is available.
+- Grids with an incompatible number of columns (a vector with a length different from the number of predictors, or a matrix with the wrong number of columns) were silently accepted. They now stop with an informative error. Also fixed the malformed `sprintf()` call that produced the error message for vectors of the wrong length.
+- Added the internal function `.check.sigma_grid()`, following the `.check.X()` and `.check.y()` pattern, and a consistency check of `sigma_grid` before calling the Fortran routine.
+
+## PRTree 1.1.0 (Release Date: 2026-07-13)
 
 ### New features
 

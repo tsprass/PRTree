@@ -1,4 +1,4 @@
-# Last revision: July/2026
+# Last revision: November/2026
 
 #' @title
 #' Probabilistic Regression Trees (PRTrees)
@@ -150,6 +150,14 @@ pr_tree <- function(y, X, control = list(), ...) {
 # and process and returns the processed output
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .pr_tree <- function(X, y, control) {
+  # The Fortran code reads sigma_grid as a (n_sigmas x n_feat) matrix without
+  # bounds checking, so make sure it is consistent before calling it.
+  control$sigma_grid <- .check.sigma_grid(control$sigma_grid, control$n_feat)
+  if (is.null(control$sigma_grid) ||
+      nrow(control$sigma_grid) != control$grid_size_final) {
+    .stop.message("'sigma_grid' is missing or inconsistent with 'grid_size_final'.")
+  }
+
   nc <- 2 * control$max_terminal_nodes - 1
   keep_full <- control$output_mode == 1
   if(control$n_obs > control$n_train){
