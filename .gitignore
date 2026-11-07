@@ -5,3 +5,7 @@
 .DS_Store
 .quarto
 .Rdata
+src/*.dll
+src/*.so
+src/*.o
+src/*.mod
