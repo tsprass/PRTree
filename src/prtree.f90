@@ -686,7 +686,7 @@ contains
     logical, allocatable :: msk_left(:)
     logical, allocatable :: msk_right(:)
     logical, allocatable :: mask_miss(:)
-    type(info_thr) :: feat_thr
+    integer :: fa_nt
     integer :: n1, n2, n, n_train, ii
     logical, allocatable :: x_mask(:)
 
@@ -761,7 +761,7 @@ contains
     mask_miss =  .not. tree%na(:, feat)
 
     ! thresholds information for splitting feature
-    feat_thr = tree%nodes(fa_id)%thresholds(feat)
+    fa_nt = tree%nodes(fa_id)%thresholds(feat)%nt
 
     ! LEFT NODE: can only split using thresholds < thr
     ! Since these observations are already in left node (msk = .true.),
@@ -769,11 +769,13 @@ contains
     n = 0   ! local counter
     if (tree%nodes(l_id)%split .and. pos > 1) then ! There exist at least one thresholds < thr
       do i = pos - 1, 1, -1                 ! Check from largest < thr downward
-        n_node = count(tree%x_train(tree%nodes(l_id)%idx, feat) > feat_thr%thr(i) .and. &
+        n_node = count(tree%x_train(tree%nodes(l_id)%idx, feat) > tree%nodes(fa_id)%thresholds(feat)%thr(i) .and. &
                        .not. tree%na(tree%nodes(l_id)%idx, feat))
         if (n_node >= tree%min_obs) then
           tree%nodes(l_id)%thresholds(feat)%nt = i
-          tree%nodes(l_id)%thresholds(feat)%thr = feat_thr%thr(1:i)
+          if (allocated(tree%nodes(l_id)%thresholds(feat)%thr)) deallocate(tree%nodes(l_id)%thresholds(feat)%thr)
+          allocate(tree%nodes(l_id)%thresholds(feat)%thr(i))
+          tree%nodes(l_id)%thresholds(feat)%thr = tree%nodes(fa_id)%thresholds(feat)%thr(1:i)
           exit
         end if
       end do
@@ -786,13 +788,15 @@ contains
     ! Since these observations are already in right node (msk = .false.),
     ! we only need to ensure the LEFT child after split has >= min_obs
     n = 0  ! local counter
-    if (tree%nodes(r_id)%split .and. pos < feat_thr%nt) then ! There exist at least one thresholds > thr
-      do i = pos + 1, feat_thr%nt                      ! Start after the exact split threshold
-        n_node = count(tree%x_train(tree%nodes(r_id)%idx, feat) <= feat_thr%thr(i) .and. &
+    if (tree%nodes(r_id)%split .and. pos < fa_nt) then ! There exist at least one thresholds > thr
+      do i = pos + 1, fa_nt                      ! Start after the exact split threshold
+        n_node = count(tree%x_train(tree%nodes(r_id)%idx, feat) <= tree%nodes(fa_id)%thresholds(feat)%thr(i) .and. &
                        .not. tree%na(tree%nodes(r_id)%idx, feat))
         if (n_node >= tree%min_obs) then
-          tree%nodes(r_id)%thresholds(feat)%nt = feat_thr%nt - i + 1
-          tree%nodes(r_id)%thresholds(feat)%thr = feat_thr%thr(i:feat_thr%nt)
+          tree%nodes(r_id)%thresholds(feat)%nt = fa_nt - i + 1
+          if (allocated(tree%nodes(r_id)%thresholds(feat)%thr)) deallocate(tree%nodes(r_id)%thresholds(feat)%thr)
+          allocate(tree%nodes(r_id)%thresholds(feat)%thr(fa_nt - i + 1))
+          tree%nodes(r_id)%thresholds(feat)%thr = tree%nodes(fa_id)%thresholds(feat)%thr(i:fa_nt)
           exit
         end if
       end do
@@ -909,6 +913,29 @@ contains
     call update_node_to_terminal(tree%nodes(fa_id))
   end subroutine update_node_state
 
+  pure subroutine copy_info_split(dst, src)
+    ! Component-wise copy of info_split to avoid derived-type RTTI assignment issues (e.g. flang-23)
+    type(info_split), intent(inout) :: dst
+    type(info_split), intent(in) :: src
+
+    dst%feat = src%feat
+    dst%thr = src%thr
+    dst%n_l = src%n_l
+    dst%n_r = src%n_r
+    dst%score = src%score
+    dst%n_imp = src%n_imp
+    if (allocated(dst%imp_feat)) deallocate(dst%imp_feat)
+    if (allocated(src%imp_feat)) then
+      allocate(dst%imp_feat(size(src%imp_feat)))
+      dst%imp_feat = src%imp_feat
+    end if
+    if (allocated(dst%regid)) deallocate(dst%regid)
+    if (allocated(src%regid)) then
+      allocate(dst%regid(size(src%regid)))
+      dst%regid = src%regid
+    end if
+  end subroutine copy_info_split
+
   pure subroutine update_best_list(n_cand, best, try, fail)
     !-----------------------------------------------------------------------------------
     !  Updates the list of best candidate splits for a node.
@@ -930,7 +957,7 @@ contains
     fail = .true.
     worst_pos = minloc(best(1:n_cand)%score, dim=1)
     if (best(worst_pos)%score < try%score) then
-      best(worst_pos) = try
+      call copy_info_split(best(worst_pos), try)
       fail = .false.
     end if
   end subroutine update_best_list
@@ -1644,7 +1671,11 @@ contains
 
     ! set the best candidates and update the node updating status
     tree%nodes(nodeid)%n_cand_found = min(tree%nodes(nodeid)%n_cand_found, tree%n_cand)
-    tree%nodes(nodeid)%best = best(1:tree%nodes(nodeid)%n_cand_found)
+    if (allocated(tree%nodes(nodeid)%best)) deallocate(tree%nodes(nodeid)%best)
+    allocate(tree%nodes(nodeid)%best(tree%nodes(nodeid)%n_cand_found))
+    do j = 1, tree%nodes(nodeid)%n_cand_found
+      call copy_info_split(tree%nodes(nodeid)%best(j), best(j))
+    end do
     tree%nodes(nodeid)%update = .false.
   end subroutine find_node_splits
 
@@ -1770,8 +1801,10 @@ contains
 
     ! save only the best candidate information for the parent node
     tree%nodes(nodeid)%n_cand_found = 1
-    best(1) = tree%nodes(nodeid)%best(splitid)
-    tree%nodes(nodeid)%best = best
+    call copy_info_split(best(1), tree%nodes(nodeid)%best(splitid))
+    if (allocated(tree%nodes(nodeid)%best)) deallocate(tree%nodes(nodeid)%best)
+    allocate(tree%nodes(nodeid)%best(1))
+    call copy_info_split(tree%nodes(nodeid)%best(1), best(1))
 
     ! update the region variable in the net
     tree%region(tree%nodes(nodeid)%idx) = best(1)%regid + n_nodes
