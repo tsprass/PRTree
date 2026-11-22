@@ -35,12 +35,13 @@ Description: Implementation of Probabilistic Regression Trees (PRTree),
   based on the PRTree methodology described in Alkhoury et al. (2020), "Smooth
   and Consistent Probabilistic Regression Trees"
   <https://proceedings.neurips.cc/paper_files/paper/2020/file/8289889263db4a40463e3f358bb7c7a1-Paper.pdf>.
-  The theoretical framework for handling missing data in PRTrees is presented in
-  Prass, T. S., Neimaier, A. S., & Pumi, G. (2026), "Handling Missing Data in
-  Probabilistic Regression Trees" <doi:10.1016/j.apm.2026.117450>, while
-  implementation details and usage in R are described in Prass, T. S., Neimaier,
-  A. S., & Pumi, G. (2025), "PRTree: An R Package for Probabilistic Regression
-  Trees with Built-in Missing Data Handling" <doi:10.48550/arXiv.2510.03634>.
+  The theoretical framework for handling missing data in probabilistic
+  regression trees is presented in Prass, T. S., Neimaier, A. S., & Pumi, G.
+  (2026), "Handling Missing Data in Probabilistic Regression Trees"
+  <doi:10.1016/j.apm.2026.117450>, while implementation details and usage in R
+  are described in Prass, T. S., Neimaier, A. S., & Pumi, G. (2025), "PRTree:
+  An R Package for Probabilistic Regression Trees with Built-in Missing Data
+  Handling" <doi:10.48550/arXiv.2510.03634>.
 License: GPL (>= 3)
 Encoding: UTF-8
 NeedsCompilation: yes
