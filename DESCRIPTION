@@ -1,6 +1,6 @@
 Package: PRTree
 Type: Package
-Date: 2026-11-07
+Date: 2026-11-22
 Title: Probabilistic Regression Trees
 Version: 1.1.1
 Authors@R: c(
@@ -15,7 +15,10 @@ Authors@R: c(
   )
 Depends: R (>= 4.3.0)
 Suggests:
-    ggplot2
+    ggplot2,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 Imports:
     tidyr (>= 1.3.0),
     gridExtra (>= 2.3),
@@ -26,18 +29,22 @@ Imports:
     graphics,
     rlang
 Description: Implementation of Probabilistic Regression Trees (PRTree),
-  providing functions for model fitting and prediction, with specific adaptations
-  to handle missing values. The main computations are implemented in 'Fortran'
-  for high efficiency. The package is based on the PRTree methodology described in
-  Alkhoury et al. (2020), "Smooth and Consistent Probabilistic Regression Trees"
-  <https://proceedings.neurips.cc/paper_files/paper/2020/file/8289889263db4a40463e3f358bb7c7a1-Paper.pdf>. 
-  Details on the treatment of missing data and implementation aspects are presented 
-  in Prass, T.S.; Neimaier, A.S.; Pumi, G. (2025), 
-  "Handling Missing Data in Probabilistic Regression Trees: Methods and Implementation in R" 
-  <doi:10.48550/arXiv.2510.03634>.    
+  providing functions for model fitting, cross-validation, visualization, and
+  prediction, with specific adaptations to handle missing values. The main
+  computations are implemented in 'Fortran' for high efficiency. The package is
+  based on the PRTree methodology described in Alkhoury et al. (2020), "Smooth
+  and Consistent Probabilistic Regression Trees"
+  <https://proceedings.neurips.cc/paper_files/paper/2020/file/8289889263db4a40463e3f358bb7c7a1-Paper.pdf>.
+  The theoretical framework for handling missing data in PRTrees is presented in
+  Prass, T. S., Neimaier, A. S., & Pumi, G. (2026), "Handling Missing Data in
+  Probabilistic Regression Trees" <doi:10.1016/j.apm.2026.117450>, while
+  implementation details and usage in R are described in Prass, T. S., Neimaier,
+  A. S., & Pumi, G. (2025), "PRTree: An R Package for Probabilistic Regression
+  Trees with Built-in Missing Data Handling" <doi:10.48550/arXiv.2510.03634>.
 License: GPL (>= 3)
 Encoding: UTF-8
 NeedsCompilation: yes
+VignetteBuilder: knitr
 Roxygen: list(old_usage = TRUE, markdown = TRUE)
 Collate: 
     'prtree.R'
@@ -55,6 +62,7 @@ Collate:
     'prtree_split.R'
     'prtree_validation.R'
 Config/roxygen2/version: 8.0.0
+Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 URL: https://github.com/tsprass/PRTree
 BugReports: https://github.com/tsprass/PRTree/issues

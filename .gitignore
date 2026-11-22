@@ -9,3 +9,5 @@ src/*.dll
 src/*.so
 src/*.o
 src/*.mod
+.Rd2pdf*
+inst/doc

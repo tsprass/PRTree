@@ -5,7 +5,7 @@
 \alias{PRTree-package}
 \alias{PRTree.Package}
 \alias{PRTree}
-\title{PRTree: Probabilistic Regression Tress}
+\title{PRTree: Probabilistic Regression Trees}
 \description{
 \packageDescription{PRTree}
 }
