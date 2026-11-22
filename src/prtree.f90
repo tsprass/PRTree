@@ -394,11 +394,12 @@ contains
     ! Added July/2025
     !-------------------------------------------------------------
     implicit none
-    type(tree_node), allocatable, intent(out) :: node(:)
+    type(tree_node), allocatable, intent(inout) :: node(:)
     integer, intent(in) :: n_train, n_feat, max_tn
     integer :: i
 
     ! Allocate the nodes object and the bounds argument
+    if (allocated(node)) deallocate(node)
     allocate(node(2 * max_tn - 1))
 
     ! initializes the state variables

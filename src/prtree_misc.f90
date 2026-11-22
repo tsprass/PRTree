@@ -202,7 +202,7 @@ contains
     real(dp), intent(in) :: x(:, :)
     logical, intent(in) :: x_mask(:)
     integer, intent(in) :: f
-    type(info_thr), intent(out) :: thresholds
+    type(info_thr), intent(inout) :: thresholds
     real(dp), allocatable :: xs(:)
     integer :: i
     integer :: n_start, n_end, n_unique, n_consider
@@ -216,6 +216,7 @@ contains
     n_consider = count(x_mask)       ! number of observations to consider
     n_end = n_consider - n_start + 1 ! last X
     thresholds%nt = 0
+    if (allocated(thresholds%thr)) deallocate(thresholds%thr)
 
     ! Early exit if a split is impossible from the start.
     if (n_end <= n_start) return
@@ -239,7 +240,10 @@ contains
     !    0.5 * (Xs(i) + Xs(i + 1))
     ! and save thr (allocatable component in the type info_thr structure)
     thresholds%nt = n_unique - 1
-    if (thresholds%nt > 0) thresholds%thr = 0.5_dp * (xs(1:n_unique - 1) + xs(2:n_unique))
+    if (thresholds%nt > 0) then
+      allocate(thresholds%thr(thresholds%nt))
+      thresholds%thr = 0.5_dp * (xs(1:n_unique - 1) + xs(2:n_unique))
+    end if
   end subroutine find_thresholds
 
   pure subroutine select_imp_features(fa_id, feature, n_feat, bounds, imp_feat, n_imp)
